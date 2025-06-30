@@ -1,8 +1,8 @@
 import unittest
 import json
 from flask import Flask
-from __init__ import app, get_db
-import db as db_layer
+from __init__ import app
+import db
 
 class BooksApiTestCase(unittest.TestCase):
     def setUp(self):
@@ -10,7 +10,7 @@ class BooksApiTestCase(unittest.TestCase):
         # Создаем контекст приложения для работы с БД
         self.app_context = app.app_context()
         self.app_context.push()
-        self.conn = get_db()
+        self.conn = db.get_db()
         # Очищаем тестовые данные
         with self.conn.cursor() as cur:
             cur.execute("DELETE FROM events;")
