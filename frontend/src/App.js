@@ -22,6 +22,7 @@ function App() {
     photo_url: '',
     point_id: ''
   });
+  const [error, setError] = useState(null);
 
   // Загрузка данных при монтировании компонента
   useEffect(() => {
@@ -32,6 +33,7 @@ function App() {
   // Загрузка книг
   const fetchBooks = async () => {
     try {
+      setError(null);
       const params = new URLSearchParams();
       if (filters.author) params.append('author', filters.author);
       if (filters.title) params.append('title', filters.title);
@@ -42,6 +44,7 @@ function App() {
       setBooks(data);
     } catch (error) {
       console.error('Ошибка загрузки книг:', error);
+      setError('Ошибка загрузки данных');
     } finally {
       setLoading(false);
     }
@@ -272,6 +275,20 @@ function App() {
       )}
 
       <main className="App-main">
+        {/* Отображение ошибки */}
+        {error && (
+          <div className="error-message" style={{ 
+            backgroundColor: '#ffebee', 
+            color: '#c62828', 
+            padding: '10px', 
+            margin: '10px 0', 
+            borderRadius: '4px',
+            border: '1px solid #ef5350'
+          }}>
+            {error}
+          </div>
+        )}
+        
         {/* Фильтры */}
         {!showMyBooks && (
           <div className="filters">
