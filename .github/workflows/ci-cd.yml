@@ -15,6 +15,10 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: read
+      actions: read
+    
     services:
       postgres:
         image: postgres:15
@@ -148,6 +152,11 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -172,6 +181,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     
+    permissions:
+      contents: read
+      actions: read
+    
     steps:
     - name: Deploy to staging environment
       run: |
@@ -184,6 +197,10 @@ jobs:
     needs: [test, security-scan, build]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    permissions:
+      contents: read
+      actions: read
     
     steps:
     - name: Deploy to production environment
