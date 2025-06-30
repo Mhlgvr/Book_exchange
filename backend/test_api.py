@@ -10,6 +10,8 @@ class BooksApiTestCase(unittest.TestCase):
         # Создаем контекст приложения для работы с БД
         self.app_context = app.app_context()
         self.app_context.push()
+        # Инициализируем базу данных
+        db.init_db()
         self.conn = db.get_db()
         # Очищаем тестовые данные
         with self.conn.cursor() as cur:

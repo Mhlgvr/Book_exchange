@@ -16,8 +16,7 @@ app.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'True')
 import routes
 import db
 
-# Инициализация базы данных при запуске
-with app.app_context():
-    db.init_db()
+# Инициализация базы данных будет выполнена при необходимости
+# (например, в тестах или при запуске приложения)
 
 __all__ = ['app'] 
