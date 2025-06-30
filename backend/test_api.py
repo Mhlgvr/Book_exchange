@@ -23,6 +23,8 @@ class BooksApiTestCase(unittest.TestCase):
             cur.execute("DELETE FROM events;")
             cur.execute("DELETE FROM books;")
             self.conn.commit()
+        # Закрываем соединение
+        self.conn.close()
         # Убираем контекст приложения
         self.app_context.pop()
 
@@ -34,66 +36,62 @@ class BooksApiTestCase(unittest.TestCase):
             "year": 2024,
             "description": "Описание тестовой книги",
             "photo_url": None,
-            "point_id": 1,
-            "user_id": "testuser"
+            "point_id": 1
         }
-        response = self.app.post('/api/books', json=book_data)
+        response = self.app.post('/api/books/add', json=book_data)
         self.assertEqual(response.status_code, 201)
-        book_id = response.get_json()['id']
+        book_id = response.get_json()['book_id']
         # Получение списка книг
         response = self.app.get('/api/books')
         self.assertEqual(response.status_code, 200)
         books = response.get_json()
-        # books[0] = [id, title, author, year, description, photo_url, point_id, user_id]
-        self.assertTrue(any(b[0] == book_id for b in books))
+        # Проверяем, что книга добавлена (ищем по title)
+        self.assertTrue(any(b['title'] == "Тестовая книга" for b in books))
 
     def test_get_books_with_filters(self):
         # Добавляем две книги
-        self.app.post('/api/books', json={
+        self.app.post('/api/books/add', json={
             "title": "Книга1",
             "author": "Автор1",
             "year": 2020,
             "description": "desc1",
             "photo_url": None,
-            "point_id": 1,
-            "user_id": "user1"
+            "point_id": 1
         })
-        self.app.post('/api/books', json={
+        self.app.post('/api/books/add', json={
             "title": "Книга2",
             "author": "Автор2",
             "year": 2021,
             "description": "desc2",
             "photo_url": None,
-            "point_id": 2,
-            "user_id": "user2"
+            "point_id": 2
         })
         # Фильтр по автору
         response = self.app.get('/api/books?author=Автор1')
         self.assertEqual(response.status_code, 200)
         books = response.get_json()
-        self.assertTrue(all('Автор1' in b[2] for b in books))  # author находится в индексе 2
+        self.assertTrue(all('Автор1' in b['author'] for b in books))
         # Фильтр по точке
         response = self.app.get('/api/books?point_id=2')
         books = response.get_json()
-        self.assertTrue(all(b[6] == 2 for b in books))  # point_id находится в индексе 6
+        self.assertTrue(all(b['point_id'] == 2 for b in books))
 
     def test_admin_events(self):
         # Добавляем книгу
-        self.app.post('/api/books', json={
+        self.app.post('/api/books/add', json={
             "title": "Книга для журнала",
             "author": "Админ",
             "year": 2022,
             "description": "desc",
             "photo_url": None,
-            "point_id": 1,
-            "user_id": "admin"
+            "point_id": 1
         })
         # Получаем журнал событий
         response = self.app.get('/api/admin/events')
         self.assertEqual(response.status_code, 200)
         events = response.get_json()
-        # events[0] = [id, book_id, title, event_type, event_time]
-        self.assertTrue(any(e[3] == 'added' for e in events))  # event_type находится в индексе 3
+        # Проверяем, что есть событие добавления книги
+        self.assertTrue(any(e['event_type'] == 'added_by_user' for e in events))
 
 if __name__ == '__main__':
     unittest.main() 
