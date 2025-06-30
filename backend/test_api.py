@@ -134,5 +134,24 @@ class BooksApiTestCase(unittest.TestCase):
         # Проверяем, что есть событие добавления книги
         self.assertTrue(any(e['event_type'] == 'added_by_user' for e in events))
 
+    def test_admin_login_success(self):
+        """Тест успешной аутентификации админа"""
+        response = self.app.post('/api/admin/login', 
+                               json={'password': 'admin'})
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertIn('message', data)
+        self.assertIn('token', data)
+        self.assertEqual(data['message'], 'Успешная аутентификация')
+
+    def test_admin_login_failure(self):
+        """Тест неудачной аутентификации админа"""
+        response = self.app.post('/api/admin/login', 
+                               json={'password': 'wrong_password'})
+        self.assertEqual(response.status_code, 401)
+        data = response.get_json()
+        self.assertIn('message', data)
+        self.assertEqual(data['message'], 'Неверный пароль')
+
 if __name__ == '__main__':
     unittest.main() 

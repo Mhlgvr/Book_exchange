@@ -1,7 +1,6 @@
 from flask import request, jsonify
 from __init__ import app
 import db as db_layer
-from db import get_db, log_event
 
 from flasgger import Swagger
 swagger = Swagger(app)
@@ -88,6 +87,52 @@ def admin_books():
     """
     books = db_layer.get_books()
     return jsonify(books)
+
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    """
+    Аутентификация админа
+    ---
+    tags:
+      - Админ
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          properties:
+            password:
+              type: string
+              required: true
+    responses:
+      200:
+        description: Успешная аутентификация
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Успешная аутентификация"
+            token:
+              type: string
+              example: "admin_token_123"
+      401:
+        description: Неверный пароль
+    """
+    try:
+        data = request.json
+        password = data.get('password')
+        
+        if password == 'admin':
+            return jsonify({
+                'message': 'Успешная аутентификация',
+                'token': 'admin_token_123'
+            }), 200
+        else:
+            return jsonify({'message': 'Неверный пароль'}), 401
+            
+    except Exception as e:
+        return jsonify({'message': f'Ошибка сервера: {str(e)}'}), 500
 
 @app.route('/api/admin/events', methods=['GET'])
 def admin_events():

@@ -23,6 +23,9 @@ function App() {
     point_id: ''
   });
   const [error, setError] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
 
   // Загрузка данных при монтировании компонента
   useEffect(() => {
@@ -155,6 +158,38 @@ function App() {
     }));
   };
 
+  // Аутентификация админа
+  const adminLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:5001/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ password: adminPassword })
+      });
+      
+      if (response.ok) {
+        setIsAdmin(true);
+        setShowAdminLogin(false);
+        setAdminPassword('');
+        alert('Успешная аутентификация!');
+      } else {
+        alert('Неверный пароль!');
+      }
+    } catch (error) {
+      console.error('Ошибка аутентификации:', error);
+      alert('Ошибка аутентификации');
+    }
+  };
+
+  // Выход из админ панели
+  const adminLogout = () => {
+    setIsAdmin(false);
+    alert('Выход из админ панели');
+  };
+
   if (loading) {
     return <div className="App">Загрузка...</div>;
   }
@@ -181,8 +216,55 @@ function App() {
           >
             {showAddForm ? 'Отмена' : 'Добавить книгу'}
           </button>
+          {!isAdmin ? (
+            <button 
+              className="header-btn admin-btn"
+              onClick={() => setShowAdminLogin(true)}
+            >
+              🔐 Админ
+            </button>
+          ) : (
+            <button 
+              className="header-btn admin-btn"
+              onClick={adminLogout}
+            >
+              🚪 Выход
+            </button>
+          )}
         </div>
       </header>
+
+      {/* Форма входа админа */}
+      {showAdminLogin && (
+        <div className="admin-login-form">
+          <h2>🔐 Вход в админ панель</h2>
+          <form onSubmit={adminLogin}>
+            <div className="form-group">
+              <label>Пароль:</label>
+              <input
+                type="password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                required
+                placeholder="Введите пароль"
+              />
+            </div>
+            <div className="form-actions">
+              <button type="submit" className="submit-btn">Войти</button>
+              <button 
+                type="button" 
+                className="cancel-btn"
+                onClick={() => {
+                  setShowAdminLogin(false);
+                  setAdminPassword('');
+                }}
+              >
+                Отмена
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Форма добавления книги */}
       {showAddForm && (
@@ -413,6 +495,41 @@ function App() {
             )
           )}
         </div>
+
+        {/* Админ панель */}
+        {isAdmin && (
+          <section className="admin-panel">
+            <h2>👨‍💼 Админ панель</h2>
+            <div className="admin-content">
+              <div className="admin-section">
+                <h3>📊 Статистика</h3>
+                <p><strong>Всего книг:</strong> {books.length}</p>
+                <p><strong>Доступных книг:</strong> {books.filter(b => !b.user_id).length}</p>
+                <p><strong>Забранных книг:</strong> {books.filter(b => b.user_id).length}</p>
+                <p><strong>Точек обмена:</strong> {points.length}</p>
+              </div>
+              <div className="admin-section">
+                <h3>📋 Журнал событий</h3>
+                <button 
+                  className="admin-btn"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('http://localhost:5001/api/admin/events');
+                      if (response.ok) {
+                        const events = await response.json();
+                        alert(`Последние события:\n${events.slice(0, 5).map(e => `${e.event_type}: ${e.title}`).join('\n')}`);
+                      }
+                    } catch (error) {
+                      alert('Ошибка загрузки событий');
+                    }
+                  }}
+                >
+                  Показать события
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Информация о сервисе */}
         <section className="info">
