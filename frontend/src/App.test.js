@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import App from './App';
 
@@ -11,22 +11,71 @@ describe('App Component', () => {
     fetch.mockClear();
   });
 
-  test('renders header with title', () => {
-    render(<App />);
-    expect(screen.getByText('📚 Сервис обмена книгами')).toBeInTheDocument();
+  test('renders header with title', async () => {
+    // Мокаем успешные API вызовы
+    fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => []
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => []
+      });
+
+    await act(async () => {
+      render(<App />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('📚 Сервис обмена книгами')).toBeInTheDocument();
+    });
   });
 
-  test('renders "Мои книги" button', () => {
-    render(<App />);
-    expect(screen.getByText('Мои книги')).toBeInTheDocument();
+  test('renders "Мои книги" button', async () => {
+    // Мокаем успешные API вызовы
+    fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => []
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => []
+      });
+
+    await act(async () => {
+      render(<App />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Мои книги')).toBeInTheDocument();
+    });
   });
 
-  test('renders "Добавить книгу" button', () => {
-    render(<App />);
-    expect(screen.getByText('Добавить книгу')).toBeInTheDocument();
+  test('renders "Добавить книгу" button', async () => {
+    // Мокаем успешные API вызовы
+    fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => []
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => []
+      });
+
+    await act(async () => {
+      render(<App />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Добавить книгу')).toBeInTheDocument();
+    });
   });
 
   test('shows loading state initially', () => {
+    // Не мокаем fetch, чтобы показать состояние загрузки
     render(<App />);
     expect(screen.getByText('Загрузка...')).toBeInTheDocument();
   });
@@ -58,7 +107,9 @@ describe('App Component', () => {
         json: async () => mockPoints
       });
 
-    render(<App />);
+    await act(async () => {
+      render(<App />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Тестовая книга')).toBeInTheDocument();
@@ -68,18 +119,35 @@ describe('App Component', () => {
   test('shows error message when API call fails', async () => {
     fetch.mockRejectedValueOnce(new Error('API Error'));
 
-    render(<App />);
+    await act(async () => {
+      render(<App />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Ошибка загрузки данных')).toBeInTheDocument();
     });
   });
 
-  test('opens add book form when button is clicked', () => {
-    render(<App />);
-    
-    const addButton = screen.getByText('Добавить книгу');
-    fireEvent.click(addButton);
+  test('opens add book form when button is clicked', async () => {
+    // Мокаем успешные API вызовы
+    fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => []
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => []
+      });
+
+    await act(async () => {
+      render(<App />);
+    });
+
+    await waitFor(() => {
+      const addButton = screen.getByText('Добавить книгу');
+      fireEvent.click(addButton);
+    });
     
     expect(screen.getByText('Добавить свою книгу')).toBeInTheDocument();
   });
@@ -110,7 +178,9 @@ describe('App Component', () => {
         json: async () => mockMyBooks
       });
 
-    render(<App />);
+    await act(async () => {
+      render(<App />);
+    });
 
     await waitFor(() => {
       const myBooksButton = screen.getByText('Мои книги');
